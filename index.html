@@ -262,6 +262,14 @@
       .role-option input {
         display: none;
       }
+
+      .student-fields {
+        display: block;
+      }
+
+      .teacher-fields {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -386,24 +394,50 @@
               required
             />
           </div>
-          <div class="mb-3" id="studentIdField">
-            <input
-              type="text"
-              class="form-control"
-              id="registerStudentId"
-              placeholder="Nomor Induk Siswa (NIS)"
-              required
-            />
+
+          <!-- Fields untuk Siswa -->
+          <div class="student-fields" id="studentFields">
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="registerStudentId"
+                placeholder="Nomor Induk Siswa (NIS)"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <select class="form-select" id="registerClass" required>
+                <option value="">Pilih Kelas</option>
+                <option value="XII IPA 1">XII IPA 1</option>
+                <option value="XII IPA 2">XII IPA 2</option>
+                <option value="XII IPS 1">XII IPS 1</option>
+                <option value="XII IPS 2">XII IPS 2</option>
+              </select>
+            </div>
           </div>
-          <div class="mb-3" id="classField">
-            <select class="form-select" id="registerClass" required>
-              <option value="">Pilih Kelas</option>
-              <option value="XII IPA 1">XII IPA 1</option>
-              <option value="XII IPA 2">XII IPA 2</option>
-              <option value="XII IPS 1">XII IPS 1</option>
-              <option value="XII IPS 2">XII IPS 2</option>
-            </select>
+
+          <!-- Fields untuk Guru -->
+          <div class="teacher-fields" id="teacherFields">
+            <div class="mb-3">
+              <input
+                type="text"
+                class="form-control"
+                id="registerTeacherId"
+                placeholder="Nomor Induk Guru (NIP)"
+              />
+            </div>
+            <div class="mb-3">
+              <select class="form-select" id="registerSubject">
+                <option value="">Mata Pelajaran</option>
+                <option value="PPKN">PPKN</option>
+                <option value="Matematika">Matematika</option>
+                <option value="Bahasa Indonesia">Bahasa Indonesia</option>
+                <option value="Bahasa Inggris">Bahasa Inggris</option>
+              </select>
+            </div>
           </div>
+
           <button type="submit" class="btn btn-primary w-100">Daftar</button>
         </form>
         <div class="auth-switch">
@@ -825,6 +859,8 @@
               password: "guru123",
               name: "Bu Sari, S.Pd",
               role: "teacher",
+              teacherId: "G001",
+              subject: "PPKN",
             },
           ];
           localStorage.setItem("ppknUsers", JSON.stringify(users));
@@ -866,8 +902,8 @@
       const showLogin = document.getElementById("showLogin");
       const studentRoleOption = document.getElementById("studentRoleOption");
       const teacherRoleOption = document.getElementById("teacherRoleOption");
-      const studentIdField = document.getElementById("studentIdField");
-      const classField = document.getElementById("classField");
+      const studentFields = document.getElementById("studentFields");
+      const teacherFields = document.getElementById("teacherFields");
       const loginError = document.getElementById("loginError");
       const registerSuccess = document.getElementById("registerSuccess");
       const registerError = document.getElementById("registerError");
@@ -881,16 +917,28 @@
         studentRoleOption.classList.add("selected");
         teacherRoleOption.classList.remove("selected");
         document.getElementById("studentRole").checked = true;
-        studentIdField.style.display = "block";
-        classField.style.display = "block";
+        studentFields.style.display = "block";
+        teacherFields.style.display = "none";
+
+        // Set required fields for student
+        document.getElementById("registerStudentId").required = true;
+        document.getElementById("registerClass").required = true;
+        document.getElementById("registerTeacherId").required = false;
+        document.getElementById("registerSubject").required = false;
       });
 
       teacherRoleOption.addEventListener("click", function () {
         teacherRoleOption.classList.add("selected");
         studentRoleOption.classList.remove("selected");
         document.getElementById("teacherRole").checked = true;
-        studentIdField.style.display = "none";
-        classField.style.display = "none";
+        studentFields.style.display = "none";
+        teacherFields.style.display = "block";
+
+        // Set required fields for teacher
+        document.getElementById("registerStudentId").required = false;
+        document.getElementById("registerClass").required = false;
+        document.getElementById("registerTeacherId").required = true;
+        document.getElementById("registerSubject").required = true;
       });
 
       // Form Switching
@@ -919,6 +967,9 @@
         registerSuccess.style.display = "none";
         registerError.style.display = "none";
         registerForm.reset();
+
+        // Reset to student role by default
+        studentRoleOption.click();
       }
 
       // Login Functionality
@@ -949,8 +1000,6 @@
         const name = document.getElementById("registerName").value;
         const username = document.getElementById("registerUsername").value;
         const password = document.getElementById("registerPassword").value;
-        const studentId = document.getElementById("registerStudentId").value;
-        const userClass = document.getElementById("registerClass").value;
 
         // Check if username already exists
         if (users.find((u) => u.username === username)) {
@@ -959,16 +1008,25 @@
           return;
         }
 
-        // Create new user
+        // Create new user based on role
         const newUser = {
           id: Date.now(),
           username: username,
           password: password,
           name: name,
           role: role,
-          studentId: role === "student" ? studentId : null,
-          class: role === "student" ? userClass : null,
         };
+
+        // Add role-specific fields
+        if (role === "student") {
+          newUser.studentId =
+            document.getElementById("registerStudentId").value;
+          newUser.class = document.getElementById("registerClass").value;
+        } else {
+          newUser.teacherId =
+            document.getElementById("registerTeacherId").value;
+          newUser.subject = document.getElementById("registerSubject").value;
+        }
 
         users.push(newUser);
         localStorage.setItem("ppknUsers", JSON.stringify(users));
@@ -1032,67 +1090,73 @@
         const assignmentsList = document.getElementById("assignmentsList");
         let html = "";
 
-        assignments.forEach((assignment) => {
-          const submission = submissions.find(
-            (s) =>
-              s.assignmentId === assignment.id && s.studentId === currentUser.id
-          );
+        if (assignments.length === 0) {
+          html =
+            '<p class="text-center text-muted">Belum ada tugas yang tersedia.</p>';
+        } else {
+          assignments.forEach((assignment) => {
+            const submission = submissions.find(
+              (s) =>
+                s.assignmentId === assignment.id &&
+                s.studentId === currentUser.id
+            );
 
-          const isSubmitted = !!submission;
-          const isLate = new Date() > new Date(assignment.deadline);
+            const isSubmitted = !!submission;
+            const isLate = new Date() > new Date(assignment.deadline);
 
-          let statusText = "Belum dikumpulkan";
-          let statusClass = "status-pending";
+            let statusText = "Belum dikumpulkan";
+            let statusClass = "status-pending";
 
-          if (isSubmitted) {
-            statusText = "Terkumpul";
-            statusClass = "status-submitted";
-          } else if (isLate) {
-            statusText = "Terlambat";
-            statusClass = "status-late";
-          }
+            if (isSubmitted) {
+              statusText = "Terkumpul";
+              statusClass = "status-submitted";
+            } else if (isLate) {
+              statusText = "Terlambat";
+              statusClass = "status-late";
+            }
 
-          html += `
-                    <div class="card assignment-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h5 class="card-title">${
-                                      assignment.title
-                                    }</h5>
-                                    <p class="card-text">${
-                                      assignment.description
-                                    }</p>
-                                    <p class="text-muted">
-                                        <i class="fas fa-clock me-1"></i>
-                                        Batas waktu: ${new Date(
-                                          assignment.deadline
-                                        ).toLocaleString("id-ID")}
-                                    </p>
-                                </div>
-                                <div class="text-end">
-                                    <span class="submission-status ${statusClass}">${statusText}</span>
-                                    <div class="mt-2">
-                                        <button class="btn btn-primary btn-sm" onclick="openAssignmentModal(${
-                                          assignment.id
-                                        })" ${isSubmitted ? "disabled" : ""}>
-                                            ${
-                                              isSubmitted
-                                                ? '<i class="fas fa-check me-1"></i>Sudah Dikumpul'
-                                                : '<i class="fas fa-upload me-1"></i>Kumpulkan'
-                                            }
-                                        </button>
+            html += `
+                        <div class="card assignment-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title">${
+                                          assignment.title
+                                        }</h5>
+                                        <p class="card-text">${
+                                          assignment.description
+                                        }</p>
+                                        <p class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Batas waktu: ${new Date(
+                                              assignment.deadline
+                                            ).toLocaleString("id-ID")}
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="submission-status ${statusClass}">${statusText}</span>
+                                        <div class="mt-2">
+                                            <button class="btn btn-primary btn-sm" onclick="openAssignmentModal(${
+                                              assignment.id
+                                            })" ${
+              isSubmitted ? "disabled" : ""
+            }>
+                                                ${
+                                                  isSubmitted
+                                                    ? '<i class="fas fa-check me-1"></i>Sudah Dikumpul'
+                                                    : '<i class="fas fa-upload me-1"></i>Kumpulkan'
+                                                }
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-        });
+                    `;
+          });
+        }
 
-        assignmentsList.innerHTML =
-          html ||
-          '<p class="text-center text-muted">Belum ada tugas yang tersedia.</p>';
+        assignmentsList.innerHTML = html;
       }
 
       // Load My Submissions
@@ -1104,41 +1168,44 @@
 
         let html = "";
 
-        mySubmissionsData.forEach((submission) => {
-          const assignment = assignments.find(
-            (a) => a.id === submission.assignmentId
-          );
-          if (!assignment) return;
+        if (mySubmissionsData.length === 0) {
+          html =
+            '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+        } else {
+          mySubmissionsData.forEach((submission) => {
+            const assignment = assignments.find(
+              (a) => a.id === submission.assignmentId
+            );
+            if (!assignment) return;
 
-          html += `
-                    <div class="card assignment-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="card-title">${
-                                      assignment.title
-                                    }</h6>
-                                    <p class="card-text text-muted mb-1">
-                                        Dikumpulkan: ${new Date(
-                                          submission.submittedAt
-                                        ).toLocaleString("id-ID")}
-                                    </p>
-                                    <p class="card-text">
-                                        <small>File: ${
-                                          submission.fileName
-                                        }</small>
-                                    </p>
+            html += `
+                        <div class="card assignment-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">${
+                                          assignment.title
+                                        }</h6>
+                                        <p class="card-text text-muted mb-1">
+                                            Dikumpulkan: ${new Date(
+                                              submission.submittedAt
+                                            ).toLocaleString("id-ID")}
+                                        </p>
+                                        <p class="card-text">
+                                            <small>File: ${
+                                              submission.fileName
+                                            }</small>
+                                        </p>
+                                    </div>
+                                    <span class="badge bg-success">Terkumpul</span>
                                 </div>
-                                <span class="badge bg-success">Terkumpul</span>
                             </div>
                         </div>
-                    </div>
-                `;
-        });
+                    `;
+          });
+        }
 
-        mySubmissions.innerHTML =
-          html ||
-          '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+        mySubmissions.innerHTML = html;
       }
 
       // Load Attendance Summary for Students
@@ -1188,56 +1255,64 @@
                         </div>
                     </div>
                 </div>
-                <h6>Riwayat Kehadiran:</h6>
-                <div class="table-responsive">
-                    <table class="attendance-table">
-                        <thead>
+            `;
+
+        if (studentAttendance.length > 0) {
+          html += `
+                    <h6>Riwayat Kehadiran:</h6>
+                    <div class="table-responsive">
+                        <table class="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th>Kelas</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+          studentAttendance.forEach((record) => {
+            const studentRecord = record.students.find(
+              (s) => s.studentId === currentUser.studentId
+            );
+            if (studentRecord) {
+              html += `
                             <tr>
-                                <th>Tanggal</th>
-                                <th>Kelas</th>
-                                <th>Status</th>
+                                <td>${new Date(record.date).toLocaleDateString(
+                                  "id-ID"
+                                )}</td>
+                                <td>${record.class}</td>
+                                <td class="${
+                                  studentRecord.status === "present"
+                                    ? "present"
+                                    : "absent"
+                                }">
+                                    <i class="fas fa-${
+                                      studentRecord.status === "present"
+                                        ? "check"
+                                        : "times"
+                                    } me-1"></i>
+                                    ${
+                                      studentRecord.status === "present"
+                                        ? "Hadir"
+                                        : "Tidak Hadir"
+                                    }
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-            `;
+                        `;
+            }
+          });
 
-        studentAttendance.forEach((record) => {
-          const studentRecord = record.students.find(
-            (s) => s.studentId === currentUser.studentId
-          );
-          if (studentRecord) {
-            html += `
-                        <tr>
-                            <td>${new Date(record.date).toLocaleDateString(
-                              "id-ID"
-                            )}</td>
-                            <td>${record.class}</td>
-                            <td class="${
-                              studentRecord.status === "present"
-                                ? "present"
-                                : "absent"
-                            }">
-                                <i class="fas fa-${
-                                  studentRecord.status === "present"
-                                    ? "check"
-                                    : "times"
-                                } me-1"></i>
-                                ${
-                                  studentRecord.status === "present"
-                                    ? "Hadir"
-                                    : "Tidak Hadir"
-                                }
-                            </td>
-                        </tr>
-                    `;
-          }
-        });
-
-        html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
+          html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+        } else {
+          html +=
+            '<p class="text-center text-muted">Belum ada data absensi.</p>';
+        }
 
         attendanceSummary.innerHTML = html;
       }
@@ -1405,98 +1480,106 @@
         );
         let html = "";
 
-        assignments.forEach((assignment) => {
-          const submissionCount = submissions.filter(
-            (s) => s.assignmentId === assignment.id
-          ).length;
-          const totalStudents = users.filter(
-            (u) => u.role === "student"
-          ).length;
+        if (assignments.length === 0) {
+          html =
+            '<p class="text-center text-muted">Belum ada tugas yang dibuat.</p>';
+        } else {
+          assignments.forEach((assignment) => {
+            const submissionCount = submissions.filter(
+              (s) => s.assignmentId === assignment.id
+            ).length;
+            const totalStudents = users.filter(
+              (u) => u.role === "student"
+            ).length;
 
-          html += `
-                    <div class="card assignment-card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h5 class="card-title">${
-                                      assignment.title
-                                    }</h5>
-                                    <p class="card-text">${
-                                      assignment.description
-                                    }</p>
-                                    <p class="text-muted">
-                                        <i class="fas fa-clock me-1"></i>
-                                        Batas waktu: ${new Date(
-                                          assignment.deadline
-                                        ).toLocaleString("id-ID")}
-                                    </p>
-                                    <p class="text-muted">
-                                        <i class="fas fa-users me-1"></i>
-                                        ${submissionCount} dari ${totalStudents} siswa sudah mengumpulkan
-                                    </p>
-                                </div>
-                                <div class="text-end">
-                                    <button class="btn btn-outline-primary btn-sm" onclick="viewAssignmentSubmissions(${
-                                      assignment.id
-                                    })">
-                                        <i class="fas fa-eye me-1"></i>Lihat Pengumpulan
-                                    </button>
+            html += `
+                        <div class="card assignment-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title">${
+                                          assignment.title
+                                        }</h5>
+                                        <p class="card-text">${
+                                          assignment.description
+                                        }</p>
+                                        <p class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Batas waktu: ${new Date(
+                                              assignment.deadline
+                                            ).toLocaleString("id-ID")}
+                                        </p>
+                                        <p class="text-muted">
+                                            <i class="fas fa-users me-1"></i>
+                                            ${submissionCount} dari ${totalStudents} siswa sudah mengumpulkan
+                                        </p>
+                                    </div>
+                                    <div class="text-end">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="viewAssignmentSubmissions(${
+                                          assignment.id
+                                        })">
+                                            <i class="fas fa-eye me-1"></i>Lihat Pengumpulan
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-        });
+                    `;
+          });
+        }
 
-        teacherAssignmentsList.innerHTML =
-          html ||
-          '<p class="text-center text-muted">Belum ada tugas yang dibuat.</p>';
+        teacherAssignmentsList.innerHTML = html;
       }
 
       function loadAllSubmissions() {
         const allSubmissions = document.getElementById("allSubmissions");
         let html = "";
 
-        submissions.forEach((submission) => {
-          const assignment = assignments.find(
-            (a) => a.id === submission.assignmentId
-          );
-          if (!assignment) return;
+        if (submissions.length === 0) {
+          html =
+            '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+        } else {
+          submissions.forEach((submission) => {
+            const assignment = assignments.find(
+              (a) => a.id === submission.assignmentId
+            );
+            if (!assignment) return;
 
-          html += `
-                    <div class="student-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${submission.studentName}</h6>
-                                <p class="mb-1 text-muted">${
-                                  submission.studentClass
-                                } • ${assignment.title}</p>
-                                <small class="text-muted">
-                                    Dikumpulkan: ${new Date(
-                                      submission.submittedAt
-                                    ).toLocaleString("id-ID")}
-                                </small>
-                            </div>
-                            <div class="text-end">
-                                <span class="badge bg-success">${
-                                  submission.fileName
-                                }</span>
-                                <div class="mt-1">
-                                    <small class="text-muted">${(
-                                      submission.fileSize /
-                                      1024 /
-                                      1024
-                                    ).toFixed(2)} MB</small>
+            html += `
+                        <div class="student-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${
+                                      submission.studentName
+                                    }</h6>
+                                    <p class="mb-1 text-muted">${
+                                      submission.studentClass
+                                    } • ${assignment.title}</p>
+                                    <small class="text-muted">
+                                        Dikumpulkan: ${new Date(
+                                          submission.submittedAt
+                                        ).toLocaleString("id-ID")}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success">${
+                                      submission.fileName
+                                    }</span>
+                                    <div class="mt-1">
+                                        <small class="text-muted">${(
+                                          submission.fileSize /
+                                          1024 /
+                                          1024
+                                        ).toFixed(2)} MB</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                `;
-        });
+                    `;
+          });
+        }
 
-        allSubmissions.innerHTML =
-          html ||
-          '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+        allSubmissions.innerHTML = html;
 
         // Update stats
         updateSubmissionStats();
@@ -1508,9 +1591,13 @@
         );
         let html = "";
 
-        users
-          .filter((u) => u.role === "student")
-          .forEach((student) => {
+        const studentUsers = users.filter((u) => u.role === "student");
+
+        if (studentUsers.length === 0) {
+          html =
+            '<p class="text-center text-muted">Belum ada siswa terdaftar.</p>';
+        } else {
+          studentUsers.forEach((student) => {
             const studentSubmissions = submissions.filter(
               (s) => s.studentId === student.id
             );
@@ -1520,22 +1607,23 @@
                 : 0;
 
             html += `
-                    <div class="student-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${student.name}</h6>
-                                <p class="mb-1 text-muted">${student.class}</p>
-                            </div>
-                            <div class="text-end">
-                                <div class="progress" style="width: 150px;">
-                                    <div class="progress-bar" style="width: ${submissionRate}%"></div>
+                        <div class="student-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${student.name}</h6>
+                                    <p class="mb-1 text-muted">${student.class}</p>
                                 </div>
-                                <small>${studentSubmissions.length}/${assignments.length} tugas</small>
+                                <div class="text-end">
+                                    <div class="progress" style="width: 150px;">
+                                        <div class="progress-bar" style="width: ${submissionRate}%"></div>
+                                    </div>
+                                    <small>${studentSubmissions.length}/${assignments.length} tugas</small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
           });
+        }
 
         studentProgressList.innerHTML = html;
       }
@@ -1596,7 +1684,9 @@
           this.reset();
           loadTeacherDashboard();
 
-          alert("Tugas berhasil dibuat!");
+          alert(
+            "Tugas berhasil dibuat! Sekarang tugas sudah tersedia untuk semua siswa."
+          );
         });
 
       function viewAssignmentSubmissions(assignmentId) {
