@@ -65,6 +65,34 @@
         color: white;
         padding: 20px 30px;
         border-radius: 20px 20px 0 0;
+        position: relative;
+      }
+
+      .last-update {
+        position: absolute;
+        right: 20px;
+        bottom: 10px;
+        font-size: 0.8rem;
+        opacity: 0.8;
+      }
+
+      .refresh-btn {
+        background: transparent;
+        border: 1px solid white;
+        color: white;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .refresh-btn:hover {
+        background: white;
+        color: var(--secondary);
       }
 
       .nav-tabs .nav-link.active {
@@ -270,6 +298,38 @@
       .teacher-fields {
         display: none;
       }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .new-submission {
+        animation: pulse 2s infinite;
+        border-left: 4px solid var(--success) !important;
+      }
+
+      @keyframes pulse {
+        0% {
+          background-color: #f8f9fa;
+        }
+        50% {
+          background-color: #e8f5e8;
+        }
+        100% {
+          background-color: #f8f9fa;
+        }
+      }
     </style>
   </head>
   <body>
@@ -456,10 +516,24 @@
           </div>
           <div class="d-flex align-items-center gap-3">
             <span id="userInfo">User</span>
+            <div class="position-relative">
+              <button class="btn btn-outline-light" id="refreshDataBtn">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+              <span
+                class="notification-badge"
+                id="updateBadge"
+                style="display: none"
+                >!</span
+              >
+            </div>
             <button class="btn btn-outline-light" id="logoutBtn">
               <i class="fas fa-sign-out-alt me-1"></i>Logout
             </button>
           </div>
+        </div>
+        <div class="last-update" id="lastUpdate">
+          Terakhir update: <span id="lastUpdateTime">-</span>
         </div>
       </div>
 
@@ -531,9 +605,15 @@
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#viewSubmissions"
-                >Lihat Pengumpulan</a
-              >
+              <a class="nav-link" data-bs-toggle="tab" href="#viewSubmissions">
+                Lihat Pengumpulan
+                <span
+                  class="badge bg-danger ms-1"
+                  id="submissionBadge"
+                  style="display: none"
+                  >0</span
+                >
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="tab" href="#studentProgress"
@@ -630,7 +710,17 @@
 
               <div class="card">
                 <div class="card-body">
-                  <h5 class="card-title">Semua Pengumpulan Siswa</h5>
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-3"
+                  >
+                    <h5 class="card-title mb-0">Semua Pengumpulan Siswa</h5>
+                    <button
+                      class="btn btn-outline-primary btn-sm"
+                      id="markAllReadBtn"
+                    >
+                      <i class="fas fa-check me-1"></i>Tandai Sudah Dibaca
+                    </button>
+                  </div>
                   <div class="student-list" id="allSubmissions">
                     <!-- All submissions will be loaded here -->
                   </div>
@@ -786,18 +876,34 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Data Storage
+      // Data Storage dengan timestamp untuk multi-device
       let currentUser = null;
-      let assignments =
-        JSON.parse(localStorage.getItem("ppknAssignments")) || [];
-      let submissions =
-        JSON.parse(localStorage.getItem("ppknSubmissions")) || [];
-      let attendance = JSON.parse(localStorage.getItem("ppknAttendance")) || [];
-      let users = JSON.parse(localStorage.getItem("ppknUsers")) || [];
+      let assignments = [];
+      let submissions = [];
+      let attendance = [];
+      let users = [];
+      let lastUpdateTime = null;
+      let unreadSubmissions = new Set();
 
-      // Initialize sample data if empty
+      // Initialize data dengan timestamp
       function initializeData() {
-        if (users.length === 0) {
+        const savedData = localStorage.getItem("ppknPortalData");
+
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          assignments = data.assignments || [];
+          submissions = data.submissions || [];
+          attendance = data.attendance || [];
+          users = data.users || [];
+          lastUpdateTime = data.lastUpdateTime || new Date().toISOString();
+
+          // Load unread submissions
+          const savedUnread = localStorage.getItem("ppknUnreadSubmissions");
+          if (savedUnread) {
+            unreadSubmissions = new Set(JSON.parse(savedUnread));
+          }
+        } else {
+          // Sample data
           users = [
             {
               id: 1,
@@ -827,33 +933,6 @@
               role: "student",
             },
             {
-              id: 4,
-              username: "siswa4",
-              password: "siswa123",
-              name: "Dian Pratama",
-              class: "XII IPA 1",
-              studentId: "S004",
-              role: "student",
-            },
-            {
-              id: 5,
-              username: "siswa5",
-              password: "siswa123",
-              name: "Eka Putri",
-              class: "XII IPA 2",
-              studentId: "S005",
-              role: "student",
-            },
-            {
-              id: 6,
-              username: "siswa6",
-              password: "siswa123",
-              name: "Fajar Nugroho",
-              class: "XII IPA 2",
-              studentId: "S006",
-              role: "student",
-            },
-            {
               id: 7,
               username: "guru",
               password: "guru123",
@@ -863,10 +942,7 @@
               subject: "PPKN",
             },
           ];
-          localStorage.setItem("ppknUsers", JSON.stringify(users));
-        }
 
-        if (assignments.length === 0) {
           assignments = [
             {
               id: 1,
@@ -877,17 +953,107 @@
               createdBy: "guru",
               createdAt: new Date().toISOString(),
             },
-            {
-              id: 2,
-              title: "Makalah Sistem Politik Indonesia",
-              description:
-                "Buat makalah tentang sistem politik Indonesia dan perkembangannya dari masa ke masa.",
-              deadline: "2024-01-25T23:59",
-              createdBy: "guru",
-              createdAt: new Date().toISOString(),
-            },
           ];
-          localStorage.setItem("ppknAssignments", JSON.stringify(assignments));
+
+          saveAllData();
+        }
+      }
+
+      // Save all data dengan timestamp
+      function saveAllData() {
+        lastUpdateTime = new Date().toISOString();
+        const data = {
+          assignments,
+          submissions,
+          attendance,
+          users,
+          lastUpdateTime,
+        };
+        localStorage.setItem("ppknPortalData", JSON.stringify(data));
+        localStorage.setItem(
+          "ppknUnreadSubmissions",
+          JSON.stringify([...unreadSubmissions])
+        );
+        updateLastUpdateTime();
+      }
+
+      // Check for updates
+      function checkForUpdates() {
+        const savedData = localStorage.getItem("ppknPortalData");
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          if (data.lastUpdateTime !== lastUpdateTime) {
+            // Data has been updated from another device
+            document.getElementById("updateBadge").style.display = "block";
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // Refresh data
+      function refreshData() {
+        const savedData = localStorage.getItem("ppknPortalData");
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          assignments = data.assignments || [];
+          submissions = data.submissions || [];
+          attendance = data.attendance || [];
+          users = data.users || [];
+          lastUpdateTime = data.lastUpdateTime;
+
+          // Load unread submissions
+          const savedUnread = localStorage.getItem("ppknUnreadSubmissions");
+          if (savedUnread) {
+            unreadSubmissions = new Set(JSON.parse(savedUnread));
+          }
+
+          updateLastUpdateTime();
+          document.getElementById("updateBadge").style.display = "none";
+
+          // Reload dashboard
+          if (currentUser) {
+            if (currentUser.role === "teacher") {
+              loadTeacherDashboard();
+            } else {
+              loadStudentDashboard();
+            }
+          }
+
+          showNotification("Data berhasil diperbarui!", "success");
+        }
+      }
+
+      // Update last update time display
+      function updateLastUpdateTime() {
+        const timeElement = document.getElementById("lastUpdateTime");
+        if (timeElement && lastUpdateTime) {
+          timeElement.textContent = new Date(lastUpdateTime).toLocaleString(
+            "id-ID"
+          );
+        }
+      }
+
+      // Show notification
+      function showNotification(message, type = "info") {
+        const alertClass = type === "success" ? "alert-success" : "alert-info";
+        const notification = document.createElement("div");
+        notification.className = `alert ${alertClass} alert-dismissible fade show`;
+        notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+        const dashboard = document.getElementById("dashboard");
+        if (dashboard) {
+          dashboard.insertBefore(notification, dashboard.firstChild);
+
+          // Auto remove after 5 seconds
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 5000);
         }
       }
 
@@ -898,6 +1064,7 @@
       const loginForm = document.getElementById("loginForm");
       const registerForm = document.getElementById("registerForm");
       const logoutBtn = document.getElementById("logoutBtn");
+      const refreshDataBtn = document.getElementById("refreshDataBtn");
       const showRegister = document.getElementById("showRegister");
       const showLogin = document.getElementById("showLogin");
       const studentRoleOption = document.getElementById("studentRoleOption");
@@ -911,6 +1078,31 @@
       const teacherDashboard = document.getElementById("teacherDashboard");
       const userGreeting = document.getElementById("userGreeting");
       const userInfo = document.getElementById("userInfo");
+      const markAllReadBtn = document.getElementById("markAllReadBtn");
+
+      // Event Listeners
+      refreshDataBtn.addEventListener("click", refreshData);
+
+      if (markAllReadBtn) {
+        markAllReadBtn.addEventListener("click", function () {
+          unreadSubmissions.clear();
+          localStorage.setItem(
+            "ppknUnreadSubmissions",
+            JSON.stringify([...unreadSubmissions])
+          );
+          document.getElementById("submissionBadge").style.display = "none";
+          loadAllSubmissions();
+          showNotification(
+            "Semua pengumpulan ditandai sudah dibaca",
+            "success"
+          );
+        });
+      }
+
+      // Check for updates every 10 seconds
+      setInterval(checkForUpdates, 10000);
+
+      // ... (sisanya sama seperti sebelumnya, tapi pastikan semua fungsi save menggunakan saveAllData())
 
       // Role Selection
       studentRoleOption.addEventListener("click", function () {
@@ -920,7 +1112,6 @@
         studentFields.style.display = "block";
         teacherFields.style.display = "none";
 
-        // Set required fields for student
         document.getElementById("registerStudentId").required = true;
         document.getElementById("registerClass").required = true;
         document.getElementById("registerTeacherId").required = false;
@@ -934,7 +1125,6 @@
         studentFields.style.display = "none";
         teacherFields.style.display = "block";
 
-        // Set required fields for teacher
         document.getElementById("registerStudentId").required = false;
         document.getElementById("registerClass").required = false;
         document.getElementById("registerTeacherId").required = true;
@@ -967,8 +1157,6 @@
         registerSuccess.style.display = "none";
         registerError.style.display = "none";
         registerForm.reset();
-
-        // Reset to student role by default
         studentRoleOption.click();
       }
 
@@ -1001,14 +1189,12 @@
         const username = document.getElementById("registerUsername").value;
         const password = document.getElementById("registerPassword").value;
 
-        // Check if username already exists
         if (users.find((u) => u.username === username)) {
           registerError.style.display = "block";
           registerSuccess.style.display = "none";
           return;
         }
 
-        // Create new user based on role
         const newUser = {
           id: Date.now(),
           username: username,
@@ -1017,7 +1203,6 @@
           role: role,
         };
 
-        // Add role-specific fields
         if (role === "student") {
           newUser.studentId =
             document.getElementById("registerStudentId").value;
@@ -1029,15 +1214,12 @@
         }
 
         users.push(newUser);
-        localStorage.setItem("ppknUsers", JSON.stringify(users));
+        saveAllData();
 
         registerSuccess.style.display = "block";
         registerError.style.display = "none";
-
-        // Clear form
         registerForm.reset();
 
-        // Auto switch to login after 2 seconds
         setTimeout(() => {
           showLoginForm();
         }, 2000);
@@ -1058,6 +1240,7 @@
 
         userGreeting.textContent = `Selamat datang, ${currentUser.name}!`;
         userInfo.textContent = currentUser.name;
+        updateLastUpdateTime();
 
         if (currentUser.role === "teacher") {
           studentDashboard.style.display = "none";
@@ -1083,6 +1266,20 @@
         loadAllSubmissions();
         loadStudentProgress();
         loadAttendanceRecords();
+        updateSubmissionBadge();
+      }
+
+      // Update submission badge
+      function updateSubmissionBadge() {
+        const badge = document.getElementById("submissionBadge");
+        if (badge) {
+          if (unreadSubmissions.size > 0) {
+            badge.textContent = unreadSubmissions.size;
+            badge.style.display = "inline";
+          } else {
+            badge.style.display = "none";
+          }
+        }
       }
 
       // Load Assignments for Students
@@ -1338,12 +1535,9 @@
                 </p>
             `;
 
-        // Reset file input
         document.getElementById("fileInput").value = "";
         document.getElementById("filePreview").innerHTML = "";
         document.getElementById("submitAssignmentBtn").disabled = true;
-
-        // Store current assignment ID
         document
           .getElementById("submitAssignmentBtn")
           .setAttribute("data-assignment-id", assignmentId);
@@ -1367,7 +1561,6 @@
           handleFileSelect(e.target.files[0]);
         });
 
-      // Drag and Drop
       const fileUploadArea = document.getElementById("fileUploadArea");
 
       fileUploadArea.addEventListener("dragover", function (e) {
@@ -1388,7 +1581,6 @@
       function handleFileSelect(file) {
         if (!file) return;
 
-        // Validate file type and size
         const validTypes = [
           "application/pdf",
           "application/msword",
@@ -1396,7 +1588,7 @@
           "image/jpeg",
           "image/png",
         ];
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 5 * 1024 * 1024;
 
         if (!validTypes.includes(file.type)) {
           alert(
@@ -1410,7 +1602,6 @@
           return;
         }
 
-        // Show file preview
         const filePreview = document.getElementById("filePreview");
         filePreview.innerHTML = `
                 <div class="alert alert-success">
@@ -1425,8 +1616,6 @@
             `;
 
         document.getElementById("submitAssignmentBtn").disabled = false;
-
-        // Store file for submission
         document.getElementById("submitAssignmentBtn").setAttribute(
           "data-file",
           JSON.stringify({
@@ -1460,17 +1649,20 @@
           };
 
           submissions.push(submission);
-          localStorage.setItem("ppknSubmissions", JSON.stringify(submissions));
+          // Mark as unread for teachers
+          unreadSubmissions.add(submission.id);
+          saveAllData();
 
-          // Close modal and refresh
           const modal = bootstrap.Modal.getInstance(
             document.getElementById("assignmentModal")
           );
           modal.hide();
 
           loadStudentDashboard();
-
-          alert("Tugas berhasil dikumpulkan!");
+          showNotification(
+            "Tugas berhasil dikumpulkan! Guru akan segera melihat pengumpulan Anda.",
+            "success"
+          );
         });
 
       // Teacher Functions
@@ -1545,8 +1737,13 @@
             );
             if (!assignment) return;
 
+            const isUnread = unreadSubmissions.has(submission.id);
+            const itemClass = isUnread ? "new-submission" : "";
+
             html += `
-                        <div class="student-item">
+                        <div class="student-item ${itemClass}" id="submission-${
+              submission.id
+            }">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-1">${
@@ -1572,6 +1769,11 @@
                                           1024
                                         ).toFixed(2)} MB</small>
                                     </div>
+                                    ${
+                                      isUnread
+                                        ? '<span class="badge bg-danger ms-1">Baru</span>'
+                                        : ""
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -1580,9 +1782,7 @@
         }
 
         allSubmissions.innerHTML = html;
-
-        // Update stats
-        updateSubmissionStats();
+        updateSubmissionBadge();
       }
 
       function loadStudentProgress() {
@@ -1636,7 +1836,6 @@
         const submittedCount = submissions.length;
         const pendingCount = totalPossibleSubmissions - submittedCount;
 
-        // Calculate late submissions (submitted after deadline)
         let lateCount = 0;
         submissions.forEach((submission) => {
           const assignment = assignments.find(
@@ -1679,13 +1878,13 @@
           };
 
           assignments.push(newAssignment);
-          localStorage.setItem("ppknAssignments", JSON.stringify(assignments));
+          saveAllData();
 
           this.reset();
           loadTeacherDashboard();
-
-          alert(
-            "Tugas berhasil dibuat! Sekarang tugas sudah tersedia untuk semua siswa."
+          showNotification(
+            "Tugas berhasil dibuat! Sekarang tugas sudah tersedia untuk semua siswa.",
+            "success"
           );
         });
 
@@ -1718,7 +1917,7 @@
         alert(message);
       }
 
-      // Attendance Management
+      // Attendance Management (sama seperti sebelumnya)
       document
         .getElementById("attendanceForm")
         .addEventListener("submit", function (e) {
@@ -1727,7 +1926,6 @@
           const date = document.getElementById("attendanceDate").value;
           const classValue = document.getElementById("attendanceClass").value;
 
-          // Check if attendance already exists for this date and class
           const existingAttendance = attendance.find(
             (a) => a.date === date && a.class === classValue
           );
@@ -1841,7 +2039,7 @@
           });
 
           attendance.push(attendanceRecord);
-          localStorage.setItem("ppknAttendance", JSON.stringify(attendance));
+          saveAllData();
 
           const modal = bootstrap.Modal.getInstance(
             document.getElementById("attendanceModal")
@@ -1849,8 +2047,7 @@
           modal.hide();
 
           loadTeacherDashboard();
-
-          alert("Absensi berhasil disimpan!");
+          showNotification("Absensi berhasil disimpan!", "success");
         });
 
       function loadAttendanceRecords() {
@@ -1936,7 +2133,6 @@
       document.addEventListener("DOMContentLoaded", function () {
         initializeData();
 
-        // Check if user is already logged in
         const savedUser = localStorage.getItem("currentUser");
         if (savedUser) {
           currentUser = JSON.parse(savedUser);
@@ -1945,7 +2141,6 @@
           showLoginForm();
         }
 
-        // Set today's date as default for attendance
         document.getElementById("attendanceDate").valueAsDate = new Date();
       });
     </script>
