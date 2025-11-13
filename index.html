@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Tugas PPKN - SMA Negeri 1</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #3498db;
+        --secondary: #2c3e50;
+        --success: #27ae60;
+        --warning: #f39c12;
+        --danger: #e74c3c;
+        --light: #ecf0f1;
+        --dark: #2c3e50;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .auth-container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        max-width: 450px;
+        margin: 30px auto;
+      }
+
+      .auth-header {
+        background: var(--secondary);
+        color: white;
+        padding: 25px;
+        text-align: center;
+      }
+
+      .auth-body {
+        padding: 25px;
+      }
+
+      .dashboard {
+        display: none;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        margin: 20px auto;
+        max-width: 1200px;
+        min-height: 90vh;
+      }
+
+      .dashboard-header {
+        background: var(--secondary);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 20px 20px 0 0;
+      }
+
+      .nav-tabs .nav-link.active {
+        background: var(--primary);
+        color: white;
+        border: none;
+      }
+
+      .nav-tabs .nav-link {
+        color: var(--secondary);
+        font-weight: 600;
+      }
+
+      .assignment-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+      }
+
+      .assignment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .submission-status {
+        font-weight: 600;
+      }
+
+      .status-submitted {
+        color: var(--success);
+      }
+
+      .status-pending {
+        color: var(--warning);
+      }
+
+      .status-late {
+        color: var(--danger);
+      }
+
+      .file-upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        padding: 30px 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .file-upload-area:hover {
+        border-color: var(--primary);
+        background: #f8f9fa;
+      }
+
+      .file-upload-area.dragover {
+        border-color: var(--primary);
+        background: #e3f2fd;
+      }
+
+      .student-list {
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .student-item {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        transition: all 0.3s ease;
+      }
+
+      .student-item:hover {
+        background: #f8f9fa;
+      }
+
+      .stats-card {
+        background: linear-gradient(135deg, var(--primary), #2980b9);
+        color: white;
+        border-radius: 15px;
+        padding: 15px;
+        text-align: center;
+      }
+
+      .stats-number {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0;
+      }
+
+      .stats-label {
+        font-size: 0.85rem;
+        opacity: 0.9;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+      }
+
+      .form-control {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+      }
+
+      .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+      }
+
+      .alert {
+        border-radius: 10px;
+        border: none;
+        padding: 10px 15px;
+      }
+
+      .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .attendance-table th,
+      .attendance-table td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      .attendance-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+      }
+
+      .present {
+        color: var(--success);
+      }
+
+      .absent {
+        color: var(--danger);
+      }
+
+      .auth-switch {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+      }
+
+      .auth-switch a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .auth-switch a:hover {
+        text-decoration: underline;
+      }
+
+      .role-selection {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .role-option {
+        flex: 1;
+        text-align: center;
+        padding: 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .role-option:hover {
+        border-color: var(--primary);
+      }
+
+      .role-option.selected {
+        border-color: var(--primary);
+        background-color: #e3f2fd;
+      }
+
+      .role-option input {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Container -->
+    <div class="auth-container" id="loginContainer">
+      <div class="auth-header">
+        <h1><i class="fas fa-graduation-cap me-2"></i>Portal PPKN</h1>
+        <p class="mb-0">SMA Negeri 1 Jakarta</p>
+      </div>
+      <div class="auth-body">
+        <div class="alert alert-danger" id="loginError" style="display: none">
+          Username atau password salah!
+        </div>
+        <form id="loginForm">
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="loginUsername"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <input
+              type="password"
+              class="form-control"
+              id="loginPassword"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Masuk</button>
+        </form>
+        <div class="auth-switch">
+          Belum punya akun? <a href="#" id="showRegister">Daftar di sini</a>
+        </div>
+        <div class="text-center mt-3">
+          <small class="text-muted">Akun Demo:</small><br />
+          <small><strong>Siswa:</strong> siswa1 / siswa123</small><br />
+          <small><strong>Guru:</strong> guru / guru123</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register Container -->
+    <div class="auth-container" id="registerContainer" style="display: none">
+      <div class="auth-header">
+        <h1><i class="fas fa-graduation-cap me-2"></i>Daftar Akun Baru</h1>
+        <p class="mb-0">Portal PPKN SMA Negeri 1 Jakarta</p>
+      </div>
+      <div class="auth-body">
+        <div
+          class="alert alert-success"
+          id="registerSuccess"
+          style="display: none"
+        >
+          Pendaftaran berhasil! Silakan login.
+        </div>
+        <div
+          class="alert alert-danger"
+          id="registerError"
+          style="display: none"
+        >
+          Username sudah digunakan!
+        </div>
+        <form id="registerForm">
+          <div class="mb-3">
+            <label class="form-label">Daftar Sebagai</label>
+            <div class="role-selection">
+              <div class="role-option selected" id="studentRoleOption">
+                <input
+                  type="radio"
+                  name="role"
+                  id="studentRole"
+                  value="student"
+                  checked
+                />
+                <label for="studentRole" class="d-block">
+                  <i class="fas fa-user-graduate fa-2x mb-2"></i><br />
+                  Siswa
+                </label>
+              </div>
+              <div class="role-option" id="teacherRoleOption">
+                <input
+                  type="radio"
+                  name="role"
+                  id="teacherRole"
+                  value="teacher"
+                />
+                <label for="teacherRole" class="d-block">
+                  <i class="fas fa-chalkboard-teacher fa-2x mb-2"></i><br />
+                  Guru
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="registerName"
+              placeholder="Nama Lengkap"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="registerUsername"
+              placeholder="Username"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <input
+              type="password"
+              class="form-control"
+              id="registerPassword"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <div class="mb-3" id="studentIdField">
+            <input
+              type="text"
+              class="form-control"
+              id="registerStudentId"
+              placeholder="Nomor Induk Siswa (NIS)"
+              required
+            />
+          </div>
+          <div class="mb-3" id="classField">
+            <select class="form-select" id="registerClass" required>
+              <option value="">Pilih Kelas</option>
+              <option value="XII IPA 1">XII IPA 1</option>
+              <option value="XII IPA 2">XII IPA 2</option>
+              <option value="XII IPS 1">XII IPS 1</option>
+              <option value="XII IPS 2">XII IPS 2</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Daftar</button>
+        </form>
+        <div class="auth-switch">
+          Sudah punya akun? <a href="#" id="showLogin">Login di sini</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+      <div class="dashboard-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1><i class="fas fa-graduation-cap me-2"></i>Portal Tugas PPKN</h1>
+            <p class="mb-0" id="userGreeting">Selamat datang!</p>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <span id="userInfo">User</span>
+            <button class="btn btn-outline-light" id="logoutBtn">
+              <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4">
+        <!-- Student Dashboard -->
+        <div id="studentDashboard">
+          <ul class="nav nav-tabs mb-4" id="studentTabs">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                data-bs-toggle="tab"
+                href="#assignments"
+                >Tugas</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#submissions"
+                >Pengumpulan Saya</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#attendance"
+                >Absensi</a
+              >
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Assignments Tab -->
+            <div class="tab-pane fade show active" id="assignments">
+              <h3 class="mb-4">Daftar Tugas PPKN</h3>
+              <div id="assignmentsList">
+                <!-- Assignments will be loaded here -->
+              </div>
+            </div>
+
+            <!-- My Submissions Tab -->
+            <div class="tab-pane fade" id="submissions">
+              <h3 class="mb-4">Riwayat Pengumpulan Saya</h3>
+              <div id="mySubmissions">
+                <!-- Submissions will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Attendance Tab -->
+            <div class="tab-pane fade" id="attendance">
+              <h3 class="mb-4">Absensi Kelas</h3>
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Rekap Kehadiran</h5>
+                  <div id="attendanceSummary">
+                    <!-- Attendance summary will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Dashboard -->
+        <div id="teacherDashboard" style="display: none">
+          <ul class="nav nav-tabs mb-4" id="teacherTabs">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                data-bs-toggle="tab"
+                href="#manageAssignments"
+                >Kelola Tugas</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#viewSubmissions"
+                >Lihat Pengumpulan</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#studentProgress"
+                >Progress Siswa</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#manageAttendance"
+                >Kelola Absensi</a
+              >
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Manage Assignments Tab -->
+            <div class="tab-pane fade show active" id="manageAssignments">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card assignment-card">
+                    <div class="card-body">
+                      <h5 class="card-title">Buat Tugas Baru</h5>
+                      <form id="createAssignmentForm">
+                        <div class="mb-3">
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="assignmentTitle"
+                            placeholder="Judul Tugas"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <textarea
+                            class="form-control"
+                            id="assignmentDescription"
+                            rows="3"
+                            placeholder="Deskripsi tugas..."
+                            required
+                          ></textarea>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Batas Waktu</label>
+                          <input
+                            type="datetime-local"
+                            class="form-control"
+                            id="assignmentDeadline"
+                            required
+                          />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                          Buat Tugas
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h5 class="mb-3">Daftar Tugas Aktif</h5>
+                  <div id="teacherAssignmentsList">
+                    <!-- Teacher's assignments will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View Submissions Tab -->
+            <div class="tab-pane fade" id="viewSubmissions">
+              <div class="row mb-4">
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number" id="totalSubmissions">0</div>
+                    <div class="stats-label">Total Pengumpulan</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number" id="submittedCount">0</div>
+                    <div class="stats-label">Terkumpul</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number" id="pendingCount">0</div>
+                    <div class="stats-label">Belum Dikumpul</div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stats-card">
+                    <div class="stats-number" id="lateCount">0</div>
+                    <div class="stats-label">Terlambat</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Semua Pengumpulan Siswa</h5>
+                  <div class="student-list" id="allSubmissions">
+                    <!-- All submissions will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Student Progress Tab -->
+            <div class="tab-pane fade" id="studentProgress">
+              <h5 class="mb-3">Progress Pengumpulan per Siswa</h5>
+              <div class="card">
+                <div class="card-body">
+                  <div class="student-list" id="studentProgressList">
+                    <!-- Student progress will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Manage Attendance Tab -->
+            <div class="tab-pane fade" id="manageAttendance">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">Input Absensi</h5>
+                      <form id="attendanceForm">
+                        <div class="mb-3">
+                          <label class="form-label">Tanggal</label>
+                          <input
+                            type="date"
+                            class="form-control"
+                            id="attendanceDate"
+                            required
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Kelas</label>
+                          <select
+                            class="form-select"
+                            id="attendanceClass"
+                            required
+                          >
+                            <option value="XII IPA 1">XII IPA 1</option>
+                            <option value="XII IPA 2">XII IPA 2</option>
+                            <option value="XII IPS 1">XII IPS 1</option>
+                            <option value="XII IPS 2">XII IPS 2</option>
+                          </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                          Buat Absensi
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <h5 class="mb-3">Rekap Absensi</h5>
+                  <div id="attendanceRecords">
+                    <!-- Attendance records will be loaded here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div class="modal fade" id="assignmentModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="assignmentModalTitle">Upload Tugas</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="assignmentDetails">
+              <!-- Assignment details will be loaded here -->
+            </div>
+            <div class="file-upload-area mt-4" id="fileUploadArea">
+              <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+              <h5>Seret file ke sini atau klik untuk upload</h5>
+              <p class="text-muted">
+                Format: PDF, DOC, DOCX, JPG, PNG (Maks. 5MB)
+              </p>
+              <input type="file" id="fileInput" style="display: none" />
+              <div id="filePreview" class="mt-3"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="submitAssignmentBtn"
+              disabled
+            >
+              Kumpulkan Tugas
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Modal -->
+    <div class="modal fade" id="attendanceModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="attendanceModalTitle">Input Absensi</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="attendanceModalBody">
+              <!-- Attendance form will be loaded here -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="saveAttendanceBtn"
+            >
+              Simpan Absensi
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Data Storage
+      let currentUser = null;
+      let assignments =
+        JSON.parse(localStorage.getItem("ppknAssignments")) || [];
+      let submissions =
+        JSON.parse(localStorage.getItem("ppknSubmissions")) || [];
+      let attendance = JSON.parse(localStorage.getItem("ppknAttendance")) || [];
+      let users = JSON.parse(localStorage.getItem("ppknUsers")) || [];
+
+      // Initialize sample data if empty
+      function initializeData() {
+        if (users.length === 0) {
+          users = [
+            {
+              id: 1,
+              username: "siswa1",
+              password: "siswa123",
+              name: "Andi Wijaya",
+              class: "XII IPA 1",
+              studentId: "S001",
+              role: "student",
+            },
+            {
+              id: 2,
+              username: "siswa2",
+              password: "siswa123",
+              name: "Budi Santoso",
+              class: "XII IPA 1",
+              studentId: "S002",
+              role: "student",
+            },
+            {
+              id: 3,
+              username: "siswa3",
+              password: "siswa123",
+              name: "Citra Dewi",
+              class: "XII IPA 1",
+              studentId: "S003",
+              role: "student",
+            },
+            {
+              id: 4,
+              username: "siswa4",
+              password: "siswa123",
+              name: "Dian Pratama",
+              class: "XII IPA 1",
+              studentId: "S004",
+              role: "student",
+            },
+            {
+              id: 5,
+              username: "siswa5",
+              password: "siswa123",
+              name: "Eka Putri",
+              class: "XII IPA 2",
+              studentId: "S005",
+              role: "student",
+            },
+            {
+              id: 6,
+              username: "siswa6",
+              password: "siswa123",
+              name: "Fajar Nugroho",
+              class: "XII IPA 2",
+              studentId: "S006",
+              role: "student",
+            },
+            {
+              id: 7,
+              username: "guru",
+              password: "guru123",
+              name: "Bu Sari, S.Pd",
+              role: "teacher",
+            },
+          ];
+          localStorage.setItem("ppknUsers", JSON.stringify(users));
+        }
+
+        if (assignments.length === 0) {
+          assignments = [
+            {
+              id: 1,
+              title: "Analisis Pancasila dalam Kehidupan Sehari-hari",
+              description:
+                "Buat analisis tentang penerapan nilai-nilai Pancasila dalam kehidupan sehari-hari di lingkungan sekitar Anda.",
+              deadline: "2024-01-20T23:59",
+              createdBy: "guru",
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              title: "Makalah Sistem Politik Indonesia",
+              description:
+                "Buat makalah tentang sistem politik Indonesia dan perkembangannya dari masa ke masa.",
+              deadline: "2024-01-25T23:59",
+              createdBy: "guru",
+              createdAt: new Date().toISOString(),
+            },
+          ];
+          localStorage.setItem("ppknAssignments", JSON.stringify(assignments));
+        }
+      }
+
+      // DOM Elements
+      const loginContainer = document.getElementById("loginContainer");
+      const registerContainer = document.getElementById("registerContainer");
+      const dashboard = document.getElementById("dashboard");
+      const loginForm = document.getElementById("loginForm");
+      const registerForm = document.getElementById("registerForm");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const showRegister = document.getElementById("showRegister");
+      const showLogin = document.getElementById("showLogin");
+      const studentRoleOption = document.getElementById("studentRoleOption");
+      const teacherRoleOption = document.getElementById("teacherRoleOption");
+      const studentIdField = document.getElementById("studentIdField");
+      const classField = document.getElementById("classField");
+      const loginError = document.getElementById("loginError");
+      const registerSuccess = document.getElementById("registerSuccess");
+      const registerError = document.getElementById("registerError");
+      const studentDashboard = document.getElementById("studentDashboard");
+      const teacherDashboard = document.getElementById("teacherDashboard");
+      const userGreeting = document.getElementById("userGreeting");
+      const userInfo = document.getElementById("userInfo");
+
+      // Role Selection
+      studentRoleOption.addEventListener("click", function () {
+        studentRoleOption.classList.add("selected");
+        teacherRoleOption.classList.remove("selected");
+        document.getElementById("studentRole").checked = true;
+        studentIdField.style.display = "block";
+        classField.style.display = "block";
+      });
+
+      teacherRoleOption.addEventListener("click", function () {
+        teacherRoleOption.classList.add("selected");
+        studentRoleOption.classList.remove("selected");
+        document.getElementById("teacherRole").checked = true;
+        studentIdField.style.display = "none";
+        classField.style.display = "none";
+      });
+
+      // Form Switching
+      showRegister.addEventListener("click", function (e) {
+        e.preventDefault();
+        showRegisterForm();
+      });
+
+      showLogin.addEventListener("click", function (e) {
+        e.preventDefault();
+        showLoginForm();
+      });
+
+      function showLoginForm() {
+        loginContainer.style.display = "block";
+        registerContainer.style.display = "none";
+        dashboard.style.display = "none";
+        loginError.style.display = "none";
+        loginForm.reset();
+      }
+
+      function showRegisterForm() {
+        loginContainer.style.display = "none";
+        registerContainer.style.display = "block";
+        dashboard.style.display = "none";
+        registerSuccess.style.display = "none";
+        registerError.style.display = "none";
+        registerForm.reset();
+      }
+
+      // Login Functionality
+      loginForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        const user = users.find(
+          (u) => u.username === username && u.password === password
+        );
+
+        if (user) {
+          currentUser = user;
+          localStorage.setItem("currentUser", JSON.stringify(currentUser));
+          showDashboard();
+        } else {
+          loginError.style.display = "block";
+        }
+      });
+
+      // Register Functionality
+      registerForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const role = document.querySelector('input[name="role"]:checked').value;
+        const name = document.getElementById("registerName").value;
+        const username = document.getElementById("registerUsername").value;
+        const password = document.getElementById("registerPassword").value;
+        const studentId = document.getElementById("registerStudentId").value;
+        const userClass = document.getElementById("registerClass").value;
+
+        // Check if username already exists
+        if (users.find((u) => u.username === username)) {
+          registerError.style.display = "block";
+          registerSuccess.style.display = "none";
+          return;
+        }
+
+        // Create new user
+        const newUser = {
+          id: Date.now(),
+          username: username,
+          password: password,
+          name: name,
+          role: role,
+          studentId: role === "student" ? studentId : null,
+          class: role === "student" ? userClass : null,
+        };
+
+        users.push(newUser);
+        localStorage.setItem("ppknUsers", JSON.stringify(users));
+
+        registerSuccess.style.display = "block";
+        registerError.style.display = "none";
+
+        // Clear form
+        registerForm.reset();
+
+        // Auto switch to login after 2 seconds
+        setTimeout(() => {
+          showLoginForm();
+        }, 2000);
+      });
+
+      // Logout Functionality
+      logoutBtn.addEventListener("click", function () {
+        currentUser = null;
+        localStorage.removeItem("currentUser");
+        showLoginForm();
+      });
+
+      // Show Dashboard
+      function showDashboard() {
+        loginContainer.style.display = "none";
+        registerContainer.style.display = "none";
+        dashboard.style.display = "block";
+
+        userGreeting.textContent = `Selamat datang, ${currentUser.name}!`;
+        userInfo.textContent = currentUser.name;
+
+        if (currentUser.role === "teacher") {
+          studentDashboard.style.display = "none";
+          teacherDashboard.style.display = "block";
+          loadTeacherDashboard();
+        } else {
+          studentDashboard.style.display = "block";
+          teacherDashboard.style.display = "none";
+          loadStudentDashboard();
+        }
+      }
+
+      // Load Student Dashboard
+      function loadStudentDashboard() {
+        loadAssignments();
+        loadMySubmissions();
+        loadAttendanceSummary();
+      }
+
+      // Load Teacher Dashboard
+      function loadTeacherDashboard() {
+        loadTeacherAssignments();
+        loadAllSubmissions();
+        loadStudentProgress();
+        loadAttendanceRecords();
+      }
+
+      // Load Assignments for Students
+      function loadAssignments() {
+        const assignmentsList = document.getElementById("assignmentsList");
+        let html = "";
+
+        assignments.forEach((assignment) => {
+          const submission = submissions.find(
+            (s) =>
+              s.assignmentId === assignment.id && s.studentId === currentUser.id
+          );
+
+          const isSubmitted = !!submission;
+          const isLate = new Date() > new Date(assignment.deadline);
+
+          let statusText = "Belum dikumpulkan";
+          let statusClass = "status-pending";
+
+          if (isSubmitted) {
+            statusText = "Terkumpul";
+            statusClass = "status-submitted";
+          } else if (isLate) {
+            statusText = "Terlambat";
+            statusClass = "status-late";
+          }
+
+          html += `
+                    <div class="card assignment-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title">${
+                                      assignment.title
+                                    }</h5>
+                                    <p class="card-text">${
+                                      assignment.description
+                                    }</p>
+                                    <p class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Batas waktu: ${new Date(
+                                          assignment.deadline
+                                        ).toLocaleString("id-ID")}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="submission-status ${statusClass}">${statusText}</span>
+                                    <div class="mt-2">
+                                        <button class="btn btn-primary btn-sm" onclick="openAssignmentModal(${
+                                          assignment.id
+                                        })" ${isSubmitted ? "disabled" : ""}>
+                                            ${
+                                              isSubmitted
+                                                ? '<i class="fas fa-check me-1"></i>Sudah Dikumpul'
+                                                : '<i class="fas fa-upload me-1"></i>Kumpulkan'
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+
+        assignmentsList.innerHTML =
+          html ||
+          '<p class="text-center text-muted">Belum ada tugas yang tersedia.</p>';
+      }
+
+      // Load My Submissions
+      function loadMySubmissions() {
+        const mySubmissions = document.getElementById("mySubmissions");
+        const mySubmissionsData = submissions.filter(
+          (s) => s.studentId === currentUser.id
+        );
+
+        let html = "";
+
+        mySubmissionsData.forEach((submission) => {
+          const assignment = assignments.find(
+            (a) => a.id === submission.assignmentId
+          );
+          if (!assignment) return;
+
+          html += `
+                    <div class="card assignment-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title">${
+                                      assignment.title
+                                    }</h6>
+                                    <p class="card-text text-muted mb-1">
+                                        Dikumpulkan: ${new Date(
+                                          submission.submittedAt
+                                        ).toLocaleString("id-ID")}
+                                    </p>
+                                    <p class="card-text">
+                                        <small>File: ${
+                                          submission.fileName
+                                        }</small>
+                                    </p>
+                                </div>
+                                <span class="badge bg-success">Terkumpul</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+
+        mySubmissions.innerHTML =
+          html ||
+          '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+      }
+
+      // Load Attendance Summary for Students
+      function loadAttendanceSummary() {
+        const attendanceSummary = document.getElementById("attendanceSummary");
+        const studentAttendance = attendance.filter((a) =>
+          a.students.some((s) => s.studentId === currentUser.studentId)
+        );
+
+        let presentCount = 0;
+        let absentCount = 0;
+
+        studentAttendance.forEach((record) => {
+          const studentRecord = record.students.find(
+            (s) => s.studentId === currentUser.studentId
+          );
+          if (studentRecord) {
+            if (studentRecord.status === "present") presentCount++;
+            else absentCount++;
+          }
+        });
+
+        const totalClasses = studentAttendance.length;
+        const attendanceRate =
+          totalClasses > 0
+            ? Math.round((presentCount / totalClasses) * 100)
+            : 0;
+
+        let html = `
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">${totalClasses}</div>
+                            <div class="stats-label">Total Pertemuan</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">${presentCount}</div>
+                            <div class="stats-label">Hadir</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <div class="stats-number">${attendanceRate}%</div>
+                            <div class="stats-label">Tingkat Kehadiran</div>
+                        </div>
+                    </div>
+                </div>
+                <h6>Riwayat Kehadiran:</h6>
+                <div class="table-responsive">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Kelas</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+        studentAttendance.forEach((record) => {
+          const studentRecord = record.students.find(
+            (s) => s.studentId === currentUser.studentId
+          );
+          if (studentRecord) {
+            html += `
+                        <tr>
+                            <td>${new Date(record.date).toLocaleDateString(
+                              "id-ID"
+                            )}</td>
+                            <td>${record.class}</td>
+                            <td class="${
+                              studentRecord.status === "present"
+                                ? "present"
+                                : "absent"
+                            }">
+                                <i class="fas fa-${
+                                  studentRecord.status === "present"
+                                    ? "check"
+                                    : "times"
+                                } me-1"></i>
+                                ${
+                                  studentRecord.status === "present"
+                                    ? "Hadir"
+                                    : "Tidak Hadir"
+                                }
+                            </td>
+                        </tr>
+                    `;
+          }
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        attendanceSummary.innerHTML = html;
+      }
+
+      // Open Assignment Modal
+      function openAssignmentModal(assignmentId) {
+        const assignment = assignments.find((a) => a.id === assignmentId);
+        if (!assignment) return;
+
+        document.getElementById(
+          "assignmentModalTitle"
+        ).textContent = `Upload Tugas: ${assignment.title}`;
+
+        const assignmentDetails = document.getElementById("assignmentDetails");
+        assignmentDetails.innerHTML = `
+                <h6>Deskripsi Tugas:</h6>
+                <p>${assignment.description}</p>
+                <p class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Batas waktu: ${new Date(assignment.deadline).toLocaleString(
+                      "id-ID"
+                    )}
+                </p>
+            `;
+
+        // Reset file input
+        document.getElementById("fileInput").value = "";
+        document.getElementById("filePreview").innerHTML = "";
+        document.getElementById("submitAssignmentBtn").disabled = true;
+
+        // Store current assignment ID
+        document
+          .getElementById("submitAssignmentBtn")
+          .setAttribute("data-assignment-id", assignmentId);
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("assignmentModal")
+        );
+        modal.show();
+      }
+
+      // File Upload Handling
+      document
+        .getElementById("fileUploadArea")
+        .addEventListener("click", function () {
+          document.getElementById("fileInput").click();
+        });
+
+      document
+        .getElementById("fileInput")
+        .addEventListener("change", function (e) {
+          handleFileSelect(e.target.files[0]);
+        });
+
+      // Drag and Drop
+      const fileUploadArea = document.getElementById("fileUploadArea");
+
+      fileUploadArea.addEventListener("dragover", function (e) {
+        e.preventDefault();
+        this.classList.add("dragover");
+      });
+
+      fileUploadArea.addEventListener("dragleave", function () {
+        this.classList.remove("dragover");
+      });
+
+      fileUploadArea.addEventListener("drop", function (e) {
+        e.preventDefault();
+        this.classList.remove("dragover");
+        handleFileSelect(e.dataTransfer.files[0]);
+      });
+
+      function handleFileSelect(file) {
+        if (!file) return;
+
+        // Validate file type and size
+        const validTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "image/jpeg",
+          "image/png",
+        ];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!validTypes.includes(file.type)) {
+          alert(
+            "Format file tidak didukung. Gunakan PDF, DOC, DOCX, JPG, atau PNG."
+          );
+          return;
+        }
+
+        if (file.size > maxSize) {
+          alert("Ukuran file terlalu besar. Maksimal 5MB.");
+          return;
+        }
+
+        // Show file preview
+        const filePreview = document.getElementById("filePreview");
+        filePreview.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-file me-2"></i>
+                    <strong>${file.name}</strong> (${(
+          file.size /
+          1024 /
+          1024
+        ).toFixed(2)} MB)
+                    <br><small class="text-muted">File siap diupload</small>
+                </div>
+            `;
+
+        document.getElementById("submitAssignmentBtn").disabled = false;
+
+        // Store file for submission
+        document.getElementById("submitAssignmentBtn").setAttribute(
+          "data-file",
+          JSON.stringify({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+          })
+        );
+      }
+
+      // Submit Assignment
+      document
+        .getElementById("submitAssignmentBtn")
+        .addEventListener("click", function () {
+          const assignmentId = parseInt(
+            this.getAttribute("data-assignment-id")
+          );
+          const fileData = JSON.parse(this.getAttribute("data-file"));
+
+          const submission = {
+            id: Date.now(),
+            assignmentId: assignmentId,
+            studentId: currentUser.id,
+            studentName: currentUser.name,
+            studentClass: currentUser.class,
+            fileName: fileData.name,
+            fileSize: fileData.size,
+            fileType: fileData.type,
+            submittedAt: new Date().toISOString(),
+            status: "submitted",
+          };
+
+          submissions.push(submission);
+          localStorage.setItem("ppknSubmissions", JSON.stringify(submissions));
+
+          // Close modal and refresh
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("assignmentModal")
+          );
+          modal.hide();
+
+          loadStudentDashboard();
+
+          alert("Tugas berhasil dikumpulkan!");
+        });
+
+      // Teacher Functions
+      function loadTeacherAssignments() {
+        const teacherAssignmentsList = document.getElementById(
+          "teacherAssignmentsList"
+        );
+        let html = "";
+
+        assignments.forEach((assignment) => {
+          const submissionCount = submissions.filter(
+            (s) => s.assignmentId === assignment.id
+          ).length;
+          const totalStudents = users.filter(
+            (u) => u.role === "student"
+          ).length;
+
+          html += `
+                    <div class="card assignment-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title">${
+                                      assignment.title
+                                    }</h5>
+                                    <p class="card-text">${
+                                      assignment.description
+                                    }</p>
+                                    <p class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Batas waktu: ${new Date(
+                                          assignment.deadline
+                                        ).toLocaleString("id-ID")}
+                                    </p>
+                                    <p class="text-muted">
+                                        <i class="fas fa-users me-1"></i>
+                                        ${submissionCount} dari ${totalStudents} siswa sudah mengumpulkan
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewAssignmentSubmissions(${
+                                      assignment.id
+                                    })">
+                                        <i class="fas fa-eye me-1"></i>Lihat Pengumpulan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+
+        teacherAssignmentsList.innerHTML =
+          html ||
+          '<p class="text-center text-muted">Belum ada tugas yang dibuat.</p>';
+      }
+
+      function loadAllSubmissions() {
+        const allSubmissions = document.getElementById("allSubmissions");
+        let html = "";
+
+        submissions.forEach((submission) => {
+          const assignment = assignments.find(
+            (a) => a.id === submission.assignmentId
+          );
+          if (!assignment) return;
+
+          html += `
+                    <div class="student-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${submission.studentName}</h6>
+                                <p class="mb-1 text-muted">${
+                                  submission.studentClass
+                                } • ${assignment.title}</p>
+                                <small class="text-muted">
+                                    Dikumpulkan: ${new Date(
+                                      submission.submittedAt
+                                    ).toLocaleString("id-ID")}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success">${
+                                  submission.fileName
+                                }</span>
+                                <div class="mt-1">
+                                    <small class="text-muted">${(
+                                      submission.fileSize /
+                                      1024 /
+                                      1024
+                                    ).toFixed(2)} MB</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        });
+
+        allSubmissions.innerHTML =
+          html ||
+          '<p class="text-center text-muted">Belum ada pengumpulan tugas.</p>';
+
+        // Update stats
+        updateSubmissionStats();
+      }
+
+      function loadStudentProgress() {
+        const studentProgressList = document.getElementById(
+          "studentProgressList"
+        );
+        let html = "";
+
+        users
+          .filter((u) => u.role === "student")
+          .forEach((student) => {
+            const studentSubmissions = submissions.filter(
+              (s) => s.studentId === student.id
+            );
+            const submissionRate =
+              assignments.length > 0
+                ? (studentSubmissions.length / assignments.length) * 100
+                : 0;
+
+            html += `
+                    <div class="student-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">${student.name}</h6>
+                                <p class="mb-1 text-muted">${student.class}</p>
+                            </div>
+                            <div class="text-end">
+                                <div class="progress" style="width: 150px;">
+                                    <div class="progress-bar" style="width: ${submissionRate}%"></div>
+                                </div>
+                                <small>${studentSubmissions.length}/${assignments.length} tugas</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+          });
+
+        studentProgressList.innerHTML = html;
+      }
+
+      function updateSubmissionStats() {
+        const totalStudents = users.filter((u) => u.role === "student").length;
+        const totalAssignments = assignments.length;
+        const totalPossibleSubmissions = totalStudents * totalAssignments;
+
+        const submittedCount = submissions.length;
+        const pendingCount = totalPossibleSubmissions - submittedCount;
+
+        // Calculate late submissions (submitted after deadline)
+        let lateCount = 0;
+        submissions.forEach((submission) => {
+          const assignment = assignments.find(
+            (a) => a.id === submission.assignmentId
+          );
+          if (
+            assignment &&
+            new Date(submission.submittedAt) > new Date(assignment.deadline)
+          ) {
+            lateCount++;
+          }
+        });
+
+        document.getElementById("totalSubmissions").textContent =
+          submittedCount;
+        document.getElementById("submittedCount").textContent = submittedCount;
+        document.getElementById("pendingCount").textContent = pendingCount;
+        document.getElementById("lateCount").textContent = lateCount;
+      }
+
+      // Create Assignment
+      document
+        .getElementById("createAssignmentForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const title = document.getElementById("assignmentTitle").value;
+          const description = document.getElementById(
+            "assignmentDescription"
+          ).value;
+          const deadline = document.getElementById("assignmentDeadline").value;
+
+          const newAssignment = {
+            id: Date.now(),
+            title: title,
+            description: description,
+            deadline: deadline,
+            createdBy: currentUser.username,
+            createdAt: new Date().toISOString(),
+          };
+
+          assignments.push(newAssignment);
+          localStorage.setItem("ppknAssignments", JSON.stringify(assignments));
+
+          this.reset();
+          loadTeacherDashboard();
+
+          alert("Tugas berhasil dibuat!");
+        });
+
+      function viewAssignmentSubmissions(assignmentId) {
+        const assignment = assignments.find((a) => a.id === assignmentId);
+        if (!assignment) return;
+
+        const assignmentSubmissions = submissions.filter(
+          (s) => s.assignmentId === assignmentId
+        );
+        let message = `Pengumpulan untuk: ${assignment.title}\n\n`;
+
+        if (assignmentSubmissions.length === 0) {
+          message += "Belum ada siswa yang mengumpulkan tugas ini.";
+        } else {
+          assignmentSubmissions.forEach((sub, index) => {
+            const isLate =
+              new Date(sub.submittedAt) > new Date(assignment.deadline);
+            message += `${index + 1}. ${sub.studentName} - ${
+              sub.studentClass
+            }\n`;
+            message += `   File: ${sub.fileName}\n`;
+            message += `   Waktu: ${new Date(sub.submittedAt).toLocaleString(
+              "id-ID"
+            )}\n`;
+            message += `   Status: ${isLate ? "TERLAMBAT" : "Tepat Waktu"}\n\n`;
+          });
+        }
+
+        alert(message);
+      }
+
+      // Attendance Management
+      document
+        .getElementById("attendanceForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const date = document.getElementById("attendanceDate").value;
+          const classValue = document.getElementById("attendanceClass").value;
+
+          // Check if attendance already exists for this date and class
+          const existingAttendance = attendance.find(
+            (a) => a.date === date && a.class === classValue
+          );
+
+          if (existingAttendance) {
+            alert("Absensi untuk tanggal dan kelas ini sudah ada!");
+            return;
+          }
+
+          openAttendanceModal(date, classValue);
+        });
+
+      function openAttendanceModal(date, classValue) {
+        document.getElementById(
+          "attendanceModalTitle"
+        ).textContent = `Input Absensi - ${new Date(date).toLocaleDateString(
+          "id-ID"
+        )} - ${classValue}`;
+
+        const classStudents = users.filter(
+          (s) => s.class === classValue && s.role === "student"
+        );
+
+        let html = `
+                <input type="hidden" id="attendanceDateValue" value="${date}">
+                <input type="hidden" id="attendanceClassValue" value="${classValue}">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>NIS</th>
+                                <th>Nama Siswa</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+        classStudents.forEach((student, index) => {
+          html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.studentId}</td>
+                        <td>${student.name}</td>
+                        <td>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status-${
+                                  student.id
+                                }" id="present-${
+            student.id
+          }" value="present" checked>
+                                <label class="form-check-label" for="present-${
+                                  student.id
+                                }">Hadir</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="status-${
+                                  student.id
+                                }" id="absent-${student.id}" value="absent">
+                                <label class="form-check-label" for="absent-${
+                                  student.id
+                                }">Tidak Hadir</label>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        document.getElementById("attendanceModalBody").innerHTML = html;
+
+        const modal = new bootstrap.Modal(
+          document.getElementById("attendanceModal")
+        );
+        modal.show();
+      }
+
+      document
+        .getElementById("saveAttendanceBtn")
+        .addEventListener("click", function () {
+          const date = document.getElementById("attendanceDateValue").value;
+          const classValue = document.getElementById(
+            "attendanceClassValue"
+          ).value;
+          const classStudents = users.filter(
+            (s) => s.class === classValue && s.role === "student"
+          );
+
+          const attendanceRecord = {
+            id: Date.now(),
+            date: date,
+            class: classValue,
+            students: [],
+          };
+
+          classStudents.forEach((student) => {
+            const status = document.querySelector(
+              `input[name="status-${student.id}"]:checked`
+            ).value;
+            attendanceRecord.students.push({
+              studentId: student.studentId,
+              name: student.name,
+              status: status,
+            });
+          });
+
+          attendance.push(attendanceRecord);
+          localStorage.setItem("ppknAttendance", JSON.stringify(attendance));
+
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("attendanceModal")
+          );
+          modal.hide();
+
+          loadTeacherDashboard();
+
+          alert("Absensi berhasil disimpan!");
+        });
+
+      function loadAttendanceRecords() {
+        const attendanceRecords = document.getElementById("attendanceRecords");
+
+        if (attendance.length === 0) {
+          attendanceRecords.innerHTML =
+            '<p class="text-center text-muted">Belum ada data absensi.</p>';
+          return;
+        }
+
+        let html = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Kelas</th>
+                                <th>Jumlah Siswa</th>
+                                <th>Hadir</th>
+                                <th>Tidak Hadir</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+        attendance.forEach((record) => {
+          const presentCount = record.students.filter(
+            (s) => s.status === "present"
+          ).length;
+          const absentCount = record.students.filter(
+            (s) => s.status === "absent"
+          ).length;
+
+          html += `
+                    <tr>
+                        <td>${new Date(record.date).toLocaleDateString(
+                          "id-ID"
+                        )}</td>
+                        <td>${record.class}</td>
+                        <td>${record.students.length}</td>
+                        <td>${presentCount}</td>
+                        <td>${absentCount}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewAttendanceDetails(${
+                              record.id
+                            })">
+                                <i class="fas fa-eye"></i> Detail
+                            </button>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        attendanceRecords.innerHTML = html;
+      }
+
+      function viewAttendanceDetails(attendanceId) {
+        const record = attendance.find((a) => a.id === attendanceId);
+        if (!record) return;
+
+        let message = `Detail Absensi - ${new Date(
+          record.date
+        ).toLocaleDateString("id-ID")} - ${record.class}\n\n`;
+
+        record.students.forEach((student, index) => {
+          message += `${index + 1}. ${student.studentId} - ${student.name}: ${
+            student.status === "present" ? "Hadir" : "Tidak Hadir"
+          }\n`;
+        });
+
+        alert(message);
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeData();
+
+        // Check if user is already logged in
+        const savedUser = localStorage.getItem("currentUser");
+        if (savedUser) {
+          currentUser = JSON.parse(savedUser);
+          showDashboard();
+        } else {
+          showLoginForm();
+        }
+
+        // Set today's date as default for attendance
+        document.getElementById("attendanceDate").valueAsDate = new Date();
+      });
+    </script>
+  </body>
+</html>
